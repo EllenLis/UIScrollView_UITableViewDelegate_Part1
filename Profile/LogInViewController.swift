@@ -12,6 +12,7 @@ class LogInViewController: UIViewController, UIScrollViewDelegate {
     private lazy var scrollView: UIScrollView = {
         let scrollView = UIScrollView()
         scrollView.translatesAutoresizingMaskIntoConstraints = false
+       
         return scrollView
     }()
     
@@ -160,6 +161,33 @@ class LogInViewController: UIViewController, UIScrollViewDelegate {
         let profile = ProfileViewController()
         self.navigationController?.pushViewController(profile, animated: true)
     }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        subscribeKeyboardEvents()
+    }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        NotificationCenter.default.removeObserver(self)
+    }
+    
+    func subscribeKeyboardEvents() {
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
+    }
+    
+    @objc private func keyboardWillShow(_ notification: Notification) {
+        
+        guard let ks = (notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey]
+                            as? NSValue)?.cgRectValue else {return}
+        self.scrollView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: ks.height - self.view.safeAreaInsets.bottom + 20, right: 0)
+            
+    }
+    
+    @objc func keyboardWillHide(_ notification: NSNotification){
+        self.scrollView.contentInset = .zero
+    }
 
 }
 
@@ -169,28 +197,6 @@ class LogInViewController: UIViewController, UIScrollViewDelegate {
                 let tapGesture = UITapGestureRecognizer(target: self.view, action: #selector(view.endEditing))
                 self.view.addGestureRecognizer(tapGesture)
             }
-        
-        override func viewWillAppear(_ animated: Bool) {
-            super.viewWillAppear(animated)
-            subscribeKeyboardEvents()
-        }
-        
-        override func viewDidDisappear(_ animated: Bool) {
-            super.viewDidDisappear(animated)
-            NotificationCenter.default.removeObserver(self)
-        }
-        
-        func subscribeKeyboardEvents() {
-            NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
-        }
-        
-        @objc private func keyboardWillShow(_ notification: Notification) {
-            
-            guard let ks = (notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey]
-                                as? NSValue)?.cgRectValue else {return}
-            self.scrollView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: ks.height, right: 0)
-                
-        }
 
     }
 

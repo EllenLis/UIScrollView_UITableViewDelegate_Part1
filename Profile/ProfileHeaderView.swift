@@ -7,11 +7,7 @@
 
 import UIKit
 
-protocol ProfileHeaderViewProtocol: AnyObject {
-    func buttonPressed()
-}
-
-class ProfileHeaderView: UIView, ProfileHeaderViewProtocol {
+class ProfileHeaderView: UIView {
     
     var statusText: String? = nil
     
@@ -25,25 +21,9 @@ class ProfileHeaderView: UIView, ProfileHeaderViewProtocol {
         return imageView
     }()
     
-    private lazy var firstStackView: UIStackView = {
-        let stackView = UIStackView()
-        stackView.translatesAutoresizingMaskIntoConstraints = false
-        stackView.axis = .horizontal
-        stackView.spacing = 16
-        return stackView
-    }()
-    
-    private lazy var secondStackView: UIStackView = {
-        let stackView = UIStackView()
-        stackView.translatesAutoresizingMaskIntoConstraints = false
-        stackView.axis = .vertical
-        stackView.distribution = .fillEqually
-        stackView.spacing = 40
-        return stackView
-    }()
-    
     private lazy var fullNameLabel: UILabel = {
         let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
         label.text  = "Cute Cat"
         label.textColor = .black
         label.font = UIFont.boldSystemFont(ofSize: 18.0)
@@ -52,15 +32,15 @@ class ProfileHeaderView: UIView, ProfileHeaderViewProtocol {
     
     private lazy var statusLabel: UILabel = {
         let statusLabel = UILabel()
+        statusLabel.translatesAutoresizingMaskIntoConstraints = false
         statusLabel.text = "Waiting for something..."
-        statusLabel.textColor = .gray
+        statusLabel.textColor = .black
         statusLabel.font = UIFont.systemFont(ofSize: 14.0)
         return statusLabel
     }()
     
     private lazy var statusTextField: UITextField = {
         let textField = UITextField()
-        textField.isHidden = true
         textField.translatesAutoresizingMaskIntoConstraints = false
         textField.backgroundColor = .white
         textField.textColor = .black
@@ -73,6 +53,7 @@ class ProfileHeaderView: UIView, ProfileHeaderViewProtocol {
         textField.leftViewMode = .always
         textField.clipsToBounds = true
         textField.placeholder = "Waiting for something..."
+        textField.addTarget(self, action: #selector(ProfileHeaderView.statusLabelChanged(_:)), for: .editingChanged)
         return textField
     }()
     
@@ -95,10 +76,6 @@ class ProfileHeaderView: UIView, ProfileHeaderViewProtocol {
         return statusButton
     }()
     
-    private var buttonTopConstrain: NSLayoutConstraint?
-    
-    weak var delegate: ProfileHeaderViewProtocol?
-    
     override init(frame: CGRect) {
         super.init(frame: frame)
         createSubviews()
@@ -109,24 +86,36 @@ class ProfileHeaderView: UIView, ProfileHeaderViewProtocol {
     }
     
     func createSubviews() {
-        self.addSubview(firstStackView)
+        self.addSubview(avatarImageView)
+        self.addSubview(fullNameLabel)
+        self.addSubview(statusLabel)
         self.addSubview(statusTextField)
         self.addSubview(setStatusButton)
-        self.firstStackView.addArrangedSubview(avatarImageView)
-        self.firstStackView.addArrangedSubview(secondStackView)
-        self.secondStackView.addArrangedSubview(fullNameLabel)
-        self.secondStackView.addArrangedSubview(statusLabel)
+        
         setupConstraints()
     }
     
     func setupConstraints() {
+        
         NSLayoutConstraint.activate([
-            firstStackView.topAnchor.constraint(equalTo: topAnchor, constant: 16),
-            firstStackView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
-            firstStackView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
+            avatarImageView.leadingAnchor.constraint(equalTo: self.safeAreaLayoutGuide.leadingAnchor, constant: 16),
+            avatarImageView.topAnchor.constraint(equalTo: self.safeAreaLayoutGuide.topAnchor, constant: 16),
             avatarImageView.heightAnchor.constraint(equalTo: avatarImageView.widthAnchor, multiplier: 1.0),
             
-            setStatusButton.topAnchor.constraint(equalTo: firstStackView.bottomAnchor, constant: 16),
+            fullNameLabel.topAnchor.constraint(equalTo: self.safeAreaLayoutGuide.topAnchor, constant: 27),
+            fullNameLabel.centerXAnchor.constraint(equalTo: self.safeAreaLayoutGuide.centerXAnchor),
+            
+            statusLabel.bottomAnchor.constraint(equalTo: statusTextField.topAnchor, constant: -10),
+            statusLabel.leadingAnchor.constraint(equalTo: self.safeAreaLayoutGuide.leadingAnchor, constant: 160),
+            
+            
+            statusTextField.bottomAnchor.constraint(equalTo: setStatusButton.topAnchor, constant: -16),
+            statusTextField.leadingAnchor.constraint(equalTo: self.safeAreaLayoutGuide.leadingAnchor, constant: 160),
+            statusTextField.heightAnchor.constraint(equalToConstant: 40),
+            statusTextField.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
+            
+            
+            setStatusButton.topAnchor.constraint(equalTo: avatarImageView.bottomAnchor, constant: 16),
             setStatusButton.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
             setStatusButton.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
             setStatusButton.heightAnchor.constraint(equalToConstant: 50),
@@ -135,18 +124,15 @@ class ProfileHeaderView: UIView, ProfileHeaderViewProtocol {
         
     }
     
-    @objc internal func buttonPressed() {
-        
+    @objc private func buttonPressed() {
         statusLabel.text = statusText
         print (statusLabel.text ?? "nil")
-        
-    }
-        
-        func statusTextChanged(_ textField: UITextField) {
-            if let text = textField.text {
-                statusText = text
-            }
-        }
-        
     }
     
+    @objc private func statusLabelChanged (_ textField: UITextField) {
+        if let text = textField.text {
+            statusText = text
+        }
+    }
+    
+}
